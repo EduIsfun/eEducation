@@ -121,8 +121,10 @@ function HomePage() {
     })
 
     if (session.role === 'assistant') {
+      appStore.uiStore.stopLoading();
       history.push(`/breakout-class/assistant/courses`)
     } else {
+      appStore.uiStore.stopLoading();
       history.push(`/classroom/${path}`)
     }  
   } 
