@@ -14,11 +14,11 @@ interface NoticeMessage {
 export class UIStore {
 
   static roomTypes: any[] = [
-    /* {
+    {
       path: 'one-to-one',
       text: 'home.1v1',
       value: 0,
-    }, */
+    },
     {
       path: 'small-class',
       text: 'home.mini_class',
@@ -29,17 +29,17 @@ export class UIStore {
       text: 'home.large_class',
       value: 2,
     },
-    /* {
+    {
       path: 'breakout-class',
       text: 'home.super_mini_class',
       value: 3,
-    }, */
+    },
   ]
 
   static languages: any[] = [
-    {
+    /* {
       text: '中文', name: 'zh-CN',
-    },
+    }, */
     {
       text: 'En', name: 'en'
     }

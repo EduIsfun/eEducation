@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import {CustomIcon} from '@/components/icon';
 import { Tooltip, ClickAwayListener } from '@material-ui/core';
 import {UploadBtn} from './upload/upload-btn'
@@ -9,6 +9,7 @@ import { SketchPicker } from 'react-color';
 import { PPTProgressPhase } from '@/utils/upload-manager';
 import { get } from 'lodash';
 import { t } from '@/i18n';
+import {ShowFrame} from './openlink/showFrame'
 
 
 const ToolItem = (props: any) => {
@@ -39,6 +40,10 @@ export const Tools = observer(() => {
         boardStore.setTool('')
         break;
       }
+      case 'stepapp': {
+        boardStore.setTool('')
+        break;
+      }
       case 'color_picker': {
         boardStore.setTool('pencil')
         break;
@@ -52,6 +57,7 @@ export const Tools = observer(() => {
 
   return (
     <ClickAwayListener onClickAway={handleClickOutSide}>
+    <div>
       <div className="tools">
           <div className="board-tools-menu">
             {items
@@ -67,6 +73,7 @@ export const Tools = observer(() => {
                 text={item.text}
                 name={item.name}
                 onClick={(name: string) => {
+                  console.log("here tool name: ", name);
                   boardStore.setTool(name)
                 }}
                 active={boardStore.selector === item.name}
@@ -85,6 +92,12 @@ export const Tools = observer(() => {
         }  
         {boardStore.showUpload ?
           <UploadBtn />
+          : null
+        }
+         
+      </div>
+      {boardStore.showStepappFrame ?
+          <ShowFrame />
           : null
         }
       </div>

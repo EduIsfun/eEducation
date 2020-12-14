@@ -55,7 +55,8 @@ const en = {
     'color_picker': 'color picker',
     'add': 'add new page',
     'upload': 'upload ',
-    'hand_tool': 'hand selector'
+    'hand_tool': 'hand selector',
+    'stepapp':'Stepapp'
   },
   'error': {
     'not_found': 'Page Not Found',

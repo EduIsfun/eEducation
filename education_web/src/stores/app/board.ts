@@ -96,6 +96,10 @@ export class BoardStore {
     {
       name: 'hand_tool',
       text: t('tool.hand_tool')
+    },
+    {
+      name: 'stepapp',
+      text: t('tool.stepapp')
     }
   ]
 
@@ -164,7 +168,7 @@ export class BoardStore {
     }
   }
 
-  menuTitle: string = '课件目录'
+  menuTitle: string = 'Documents'
 
   appStore!: AppStore
 
@@ -392,6 +396,9 @@ export class BoardStore {
 
   @observable
   showColorPicker: boolean = false
+  
+  @observable
+  showStepappFrame: boolean = false
 
   @observable
   strokeColor: any = {
@@ -414,6 +421,12 @@ export class BoardStore {
       this.showColorPicker = true
     } else if (this.showColorPicker) {
       this.showColorPicker = false
+    }
+
+    if (this.selector === 'stepapp') {
+      this.showStepappFrame = true
+    } else if (this.showStepappFrame) {
+      this.showStepappFrame = false
     }
 
     if (!this.room || !this.room.isWritable) return
