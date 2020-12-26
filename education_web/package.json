@@ -32,7 +32,7 @@
       "main": "build/index.js"
     },
     "productName": "AgoraEducation",
-    "appId": "io.agora.education",
+    "appId": "58dc40def494479386068478bad00114",
     "files": [
       "build/**/*"
     ],
