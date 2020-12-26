@@ -5,12 +5,13 @@ import { observable, action, computed, runInAction } from 'mobx'
 import { PPTProgressPhase } from '@/utils/upload-manager'
 import { Room, PPTKind, ViewMode } from 'white-web-sdk'
 import { BoardClient } from '@/components/netless-board/board-client';
-import { get, isEmpty, omit } from 'lodash';
+import { get, has, isEmpty, omit } from 'lodash';
 import { OSSConfig } from '@/utils/helper';
 import OSS from 'ali-oss';
 import uuidv4 from 'uuid/v4';
 import { t } from '@/i18n';
 import { EduUser, EduRoleType } from '@/sdk/education/interfaces';
+
 
 export const resolveFileInfo = (file: any) => {
   const fileName = encodeURI(file.name);
@@ -188,7 +189,7 @@ export class BoardStore {
   constructor(appStore: AppStore) {
     this.appStore = appStore
     this._boardClient = undefined
-    this.ossClient = new OSS(ossConfig)
+    this.ossClient = new OSS(ossConfig);
   }
 
   @observable
@@ -211,7 +212,7 @@ export class BoardStore {
 
   @observable
   permission: number = 0
-
+  
   get localUserUuid() {
     return this.appStore.userUuid
   }
@@ -223,7 +224,8 @@ export class BoardStore {
           boardId,
           boardToken
         },
-      } = await this.boardService.getBoardInfo()
+      } = await this.boardService.getBoardInfo();
+      
       await this.join({
         uuid: boardId,
         roomToken: boardToken,
@@ -242,7 +244,6 @@ export class BoardStore {
         this._grantPermission = true
       }
       this.follow = follow
-      // 默认只有老师不用禁止跟随
       if (this.userRole !== 'teacher') {
         if (this.boardClient.room && this.boardClient.room.isWritable) {
           if (this.follow === FollowState.Follow) {
@@ -269,7 +270,9 @@ export class BoardStore {
       } else {
         await this.setWritable(this._grantPermission as boolean)
       }
-      this.ready = true
+      
+      this.ready = true;
+      
   }
 
   @action
@@ -320,10 +323,12 @@ export class BoardStore {
     this.grantUsers = args
   }
 
+  
   @action
   async join(params: any) {
     const {role, ...data} = params
     const identity = role === 'teacher' ? 'host' : 'guest'
+       
     this._boardClient = new BoardClient({identity})
     this.boardClient.on('onPhaseChanged', (state: any) => {
       if (state === 'disconnected') {
@@ -342,6 +347,17 @@ export class BoardStore {
       if (state.globalState) {
         this.updateBoardState()
       }
+      const _newState = get(this.room.state.globalState, 'showStepapp', 0);
+      const elem = <HTMLIFrameElement>document.getElementById("stepappFrame")
+      const froom =this.room;
+      console.log("here room global state: ", _newState)
+      
+     // if(_newState===1 || _newState==="1"){
+      if(this.showStepappFrame){
+        elem.style.display="block";
+      }else{
+        elem.style.display="none";
+      }
     })
     console.log("[breakout board] join", data)
     await this.boardClient.join(data)
@@ -349,7 +365,11 @@ export class BoardStore {
     this.online = true
     // this.updateSceneItems()
     //@ts-ignore
-    this.room.bindHtmlElement(null)
+    
+    this.room.bindHtmlElement(null);
+     
+    this.room.addMagixEventListener("showFrame", this.onShareFrame);
+    this.room.addMagixEventListener("boradCastFrame", this.onStartSharing);
     window.addEventListener('resize', () => {
       if (this.online && this.room && this.room.isWritable) {
         this.room.moveCamera({centerX: 0, centerY: 0});
@@ -357,6 +377,8 @@ export class BoardStore {
       }
     })
     this.updateSceneItems()
+    
+     
   }
 
   @action
@@ -408,8 +430,57 @@ export class BoardStore {
   }
 
   @action
-  setTool(tool: string) {
+  async onShareFrame(eventObject:any) {
+    console.log("here OnReceiveGift custom event: ", eventObject.playload); // event payload
+    /* let stream : any = "";
+    let tRoom = this.room; 
+    
+    const grantUsers = get(tRoom.state.globalState, 'grantUsers', [])
+    const hasPermission = grantUsers.includes(this.localUserUuid) || this.roomType === 0 ? true : false
+    
+    const gdmOptions = {
+      video: {
+        cursor: "always"
+      },
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: 44100
+      }
+    }
+    const mediaDevices = navigator.mediaDevices as any;
+    if(eventObject.payload.shareFrame){
+      if(hasPermission){
+        try {
+          stream = await mediaDevices.getDisplayMedia(gdmOptions);
+        } catch(err) {
+          console.error("Error: " + err);
+        }
+        
+      }
+    } */
+  }
+
+  @action
+  onStartSharing(eventObject:any){
+    const elem = <HTMLIFrameElement>document.getElementById("stepappFrame");
+    const videoelem = <HTMLMediaElement>document.getElementById("sharingVideo");
+    elem.style.display="block";
+    console.log("here onStartSharing: ", eventObject.payload)
+    /* if(eventObject.payload.shareFrame){
+      elem.style.display = "block"
+      videoelem.srcObject = eventObject.payload.stream;
+    }else{
+      elem.style.display = "none"
+      videoelem.srcObject = null;
+    }  */
+  }
+
+
+  @action
+  async setTool(tool: string) {
     this.selector = tool
+   // this.boardClient.hideStepapp()
     if (this.selector === 'upload') {
       this.showUpload = true
     }
@@ -424,9 +495,11 @@ export class BoardStore {
     }
 
     if (this.selector === 'stepapp') {
-      this.showStepappFrame = true
+      this.showStepappFrame = true;
+      this.boardClient.showStepapp();
     } else if (this.showStepappFrame) {
       this.showStepappFrame = false
+      this.boardClient.hideStepapp()
     }
 
     if (!this.room || !this.room.isWritable) return
@@ -1106,7 +1179,7 @@ export class BoardStore {
   async grantBoardPermission(userUuid: string) {
     try {
       this.boardClient.grantPermission(userUuid)
-      this.appStore.uiStore.addToast(`授权白板成功`)
+      this.appStore.uiStore.addToast(`successfully Authorization`)
     } catch (err) {
       this.appStore.uiStore.addToast(t('toast.failed_to_authorize_whiteboard') + `${err.msg}`)
     }
@@ -1116,14 +1189,13 @@ export class BoardStore {
   async revokeBoardPermission(userUuid: string) {
     try {
       this.boardClient.revokePermission(userUuid)
-      this.appStore.uiStore.addToast(`取消授权白板成功`)
+      this.appStore.uiStore.addToast(`successfully Authorization`)
     } catch (err) {
       this.appStore.uiStore.addToast(t('toast.failed_to_deauthorize_whiteboard') + `${err.msg}`)
     }
   }
 
   mount(dom: any) {
-    console.log("mounted", dom, this.boardClient && this.boardClient.room)
     if (this.boardClient && this.boardClient.room) {
       this.boardClient.room.bindHtmlElement(dom)
     }
@@ -1134,4 +1206,55 @@ export class BoardStore {
       this.boardClient.room.bindHtmlElement(null)
     }
   }
+
+  @action
+  startCapture = async() => {
+    let captureStream = null;
+    const gdmOptions = {
+      video: {
+        cursor: "always"
+      },
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: 44100
+      }
+    }
+    const mediaDevices = navigator.mediaDevices as any;
+    try {
+      captureStream = await mediaDevices.getDisplayMedia(gdmOptions);
+    } catch(err) {
+      console.error("Error: " + err);
+    }
+   // return captureStream;
+  }
+
+  @action
+  async displayFrame (param :any){
+    let stream : any = "";
+/*     const grantUsers = get(this.room.state.globalState, 'grantUsers', [])
+    const hasPermission = grantUsers.includes(this.localUserUuid) || this.roomType === 0 ? true : false
+    console.log("here permission: ", hasPermission, this.hasPermission);
+ */    const gdmOptions = {
+      video: {
+        cursor: "always"
+      },
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: 44100
+      }
+    }
+    const mediaDevices = navigator.mediaDevices as any;
+    try {
+      stream = await mediaDevices.getDisplayMedia(gdmOptions);
+    } catch(err) {
+      console.error("Error: " + err);
+    }
+    console.log("here Stream: ", stream);
+    this.room.dispatchMagixEvent("showFrame", {
+      stream:stream
+    });
+  }
+  
 }

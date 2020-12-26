@@ -194,6 +194,7 @@ const BreakoutClassSceneFooterMenu = observer(() => {
         boardStore.openFolder()
       }}
       onClickBoardLock={() => {
+        document.getElementsByClassName("lock-board")[0].classList.toggle("active")
         boardStore.toggleLockBoard()
       }}
       zoomChange={(scale: number) => {

@@ -41,7 +41,8 @@ export const Tools = observer(() => {
         break;
       }
       case 'stepapp': {
-        boardStore.setTool('')
+       // boardStore.setTool('');
+       // boardStore.setTool('hand');
         break;
       }
       case 'color_picker': {
@@ -57,7 +58,6 @@ export const Tools = observer(() => {
 
   return (
     <ClickAwayListener onClickAway={handleClickOutSide}>
-    <div>
       <div className="tools">
           <div className="board-tools-menu">
             {items
@@ -73,7 +73,6 @@ export const Tools = observer(() => {
                 text={item.text}
                 name={item.name}
                 onClick={(name: string) => {
-                  console.log("here tool name: ", name);
                   boardStore.setTool(name)
                 }}
                 active={boardStore.selector === item.name}
@@ -95,11 +94,6 @@ export const Tools = observer(() => {
           : null
         }
          
-      </div>
-      {boardStore.showStepappFrame ?
-          <ShowFrame />
-          : null
-        }
       </div>
     </ClickAwayListener>
 
