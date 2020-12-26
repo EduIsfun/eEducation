@@ -2,7 +2,7 @@
   "name": "Agora-Edu-Web",
   "version": "6.0.0",
   "private": true,
-  "homepage": "./",
+  "homepage": ".",
   "main": "./src/index.tsx",
   "agora_electron": {
     "platform": "darwin",
@@ -78,9 +78,20 @@
     }
   },
   "scripts": {
+    "install_electron": "node ./scripts/postinstall.js",
+    "electron": "cross-env REACT_APP_RUNTIME_PLATFORM=electron ELECTRON_START_URL=http://localhost:3000 concurrently \"npm run electron:web\" \"wait-on http://localhost:3000 && npm run electron:client\"",
+    "electron:client": "cross-env electron ./app/",
+    "electron:web": "cross-env BROWSER=none react-app-rewired start",
+    "electron:copy:web": "cross-env REACT_APP_RUNTIME_PLATFORM=electron react-app-rewired build",
+    "electron:copy:electron": "cpx ./app/**/*.js ./build",
+    "electron:build": "npm run electron:copy:web && npm run electron:copy:electron",
     "dev": "cross-env TSC_COMPILE_ON_ERROR=false REACT_APP_RUNTIME_PLATFORM=web react-app-rewired start",
     "build": "cross-env TSC_COMPILE_ON_ERROR=false ENV=production REACT_APP_RUNTIME_PLATFORM=web react-app-rewired build",
-    "test": "react-app-rewired test --env=jsdom"
+    "test": "react-app-rewired test --env=jsdom",
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "eject": "react-scripts eject",
+    "pack:mac": "npm run electron:build && electron-builder --mac",
+    "pack:win": "npm run electron:build && electron-builder --win"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -109,6 +120,7 @@
     "@types/axios": "^0.14.0",
     "@types/deep-diff": "^1.0.0",
     "@types/jest": "^24.0.19",
+    "@types/js-md5": "^0.4.2",
     "@types/lodash": "^4.14.145",
     "@types/node": "^12.12.47",
     "@types/raf": "^3.4.0",
@@ -116,7 +128,7 @@
     "@types/react-color": "^3.0.1",
     "@types/react-dom": "^16.9.2",
     "@types/react-router-dom": "^5.1.0",
-    "@types/ua-parser-js": "^0.7.33",
+    "@types/ua-parser-js": "^0.7.35",
     "@types/uuid": "^3.4.6",
     "@types/video.js": "^7.3.4",
     "agora-rtc-sdk-ng": "4.1.1",
@@ -173,7 +185,6 @@
     "zlib": "^1.0.5"
   },
   "dependencies": {
-    "adm-zip": "^0.4.14",
-    "agora-electron-sdk": "^2.9.0-rc.107-build.998"
+    "adm-zip": "^0.4.14"
   }
 }
